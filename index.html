@@ -48,13 +48,14 @@
 
 <body>
   <div class="container">
-    <h2>🌳 Dnyanesh Agale — Endorsement Tree</h2>
+    <h2>🌳 Abhrankan Chakrabarti — Endorsement Tree</h2>
 
     <div class="mermaid" id="tree">
       Loading tree...
     </div>
   </div>
 
+  <script src="config.js"></script>
   <script>
     mermaid.initialize({
       startOnLoad: false,
@@ -78,7 +79,7 @@
       }
     });
 
-    fetch("https://script.google.com/macros/s/AKfycbzFhi4o-6ImKZdU3XYtM01AXshN4A71a80aPimnumnt869M_X5YF9kayZqTJ2kjJsDVLw/exec")
+    fetch(`${CONFIG.API_BASE}/api/endorsements`)
       .then(res => res.json())
       .then(data => {
         let diagram = "graph TD\n";
