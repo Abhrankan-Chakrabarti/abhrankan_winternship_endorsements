@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Endorsement Tree</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+
+  <style>
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      background: linear-gradient(135deg, #eef2ff, #f8fafc);
+      font-family: "Inter", system-ui, Arial, sans-serif;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      margin-top: 40px;
+      padding: 32px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 28px;
+      font-weight: 700;
+      color: #1f2937;
+    }
+
+    .mermaid {
+      display: flex;
+      justify-content: center;
+      background: #f9fafb;
+      padding: 30px;
+      border-radius: 12px;
+      overflow-x: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h2>🌳 Dnyanesh Agale — Endorsement Tree</h2>
+
+    <div class="mermaid" id="tree">
+      Loading tree...
+    </div>
+  </div>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: "base",
+      themeVariables: {
+        primaryColor: "#ffffff",
+        primaryBorderColor: "#4f46e5",
+        primaryTextColor: "#111827",
+
+        secondaryColor: "#eef2ff",
+        secondaryBorderColor: "#6366f1",
+
+        lineColor: "#374151",
+        fontFamily: "Inter, Arial, sans-serif",
+        fontSize: "15px"
+      },
+      flowchart: {
+        curve: "basis",
+        nodeSpacing: 50,
+        rankSpacing: 80
+      }
+    });
+
+    fetch("https://script.google.com/macros/s/AKfycbzFhi4o-6ImKZdU3XYtM01AXshN4A71a80aPimnumnt869M_X5YF9kayZqTJ2kjJsDVLw/exec")
+      .then(res => res.json())
+      .then(data => {
+        let diagram = "graph TD\n";
+
+        data.forEach(row => {
+          if (row.action === "Endorse") {
+            diagram += `
+              ${row.parentId}["<b>${row.parentName}</b><br/><span style='font-size:12px;color:#6b7280'>${row.parentId}</span>"]
+              --> 
+              ${row.childId}["<b>${row.childName}</b><br/><span style='font-size:12px;color:#6b7280'>${row.childId}</span>"]
+            `;
+          }
+        });
+
+        const treeDiv = document.getElementById("tree");
+        treeDiv.innerHTML = diagram;
+        mermaid.init(undefined, treeDiv);
+      })
+      .catch(err => {
+        document.getElementById("tree").innerText = "Failed to load tree";
+        console.error(err);
+      });
+  </script>
+</body>
+</html>
