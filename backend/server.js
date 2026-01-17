@@ -65,13 +65,14 @@ app.get("/api/endorsements", async (req, res) => {
         parentName: 1,
         childId: 1,
         childName: 1,
-        action: 1
+        action: 1,
+        order: 1
       }
-    ).sort({ createdAt: 1 });
+    ).sort({ order: 1 });
 
     res.json(endorsements);
   } catch (err) {
-    console.error("❌ Fetch failed:", err);
+    console.error(err);
     res.status(500).json({ error: "Failed to fetch endorsements" });
   }
 });
