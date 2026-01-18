@@ -1,30 +1,28 @@
-# Jedi Endorsement Network – Backend API
+# Jedi Endorsement Network
 
-This repository contains the backend service for the **Jedi Endorsement Network**, a self-healing trust network that models endorsements between interns and visualizes hierarchical relationships in real time.
+A **self-healing endorsement network** that models trust relationships between interns and visualizes them as a hierarchical tree.
 
-The API powers a static frontend (hosted on GitHub Pages) that renders endorsement trees using Mermaid.js.
-
----
-
-## 🚀 Features
-
-- REST API to fetch endorsement relationships
-- MongoDB-backed persistence
-- Simple, lightweight Express server
-- Native MongoDB driver (no ORM overhead)
-- Designed for visualization-friendly data output
-- CORS-enabled for static frontend consumption
+This repository contains **both**:
+- a **backend API** (Express + MongoDB via Mongoose), and  
+- a **static frontend** (HTML + Mermaid.js) hosted on **GitHub Pages**.
 
 ---
 
-## 🧱 Tech Stack
+## 🌐 Live Demo (Frontend)
 
-- **Node.js**
-- **Express**
-- **MongoDB**
-- **Native MongoDB Driver**
-- **dotenv**
-- **CORS**
+👉 https://abhrankan-chakrabarti.github.io/abhrankan_winternship_endorsements/
+
+The frontend fetches live data from the backend API and renders the endorsement tree dynamically.
+
+---
+
+## 🧠 Concept Overview
+
+- Interns endorse each other, forming a **directed trust network**
+- Endorsements eventually link to a **root intern**
+- The tree is rendered visually using **Mermaid.js**
+- Indirect relationships (multi-level endorsements) are supported
+- Ordering is preserved exactly as defined in configuration JSON files
 
 ---
 
@@ -32,45 +30,65 @@ The API powers a static frontend (hosted on GitHub Pages) that renders endorseme
 
 ```
 
-backend/
-├── server.js        # Express server + API routes
-├── seed.js          # Database seeding script
-├── package.json
-├── .env             # Environment variables (not committed)
+.
+├── index.html                  # Static frontend (GitHub Pages)
+├── config.js                   # Frontend runtime configuration (API base URL)
+│
+├── backend/
+│   ├── server.js               # Express server + API routes
+│   ├── seed.js                 # Deterministic database seeding script
+│   ├── models/
+│   │   ├── Member.js           # Mongoose Member schema
+│   │   └── Endorsement.js      # Mongoose Endorsement schema
+│   ├── endorsement_network.members.json   # All interns (authoritative list)
+│   ├── endorsement_network.indirect.json  # Indirect endorsement edges
+│   ├── endorsement_network.config.json    # Root + ordering config
+│   ├── package.json
+│   └── .env                    # Environment variables (not committed)
 
-```
+````
+
+---
+
+## 🧱 Tech Stack
+
+### Backend
+- **Node.js**
+- **Express**
+- **MongoDB Atlas**
+- **Mongoose (ODM)**
+- **dotenv**
+- **CORS**
+
+### Frontend
+- **Vanilla HTML/CSS**
+- **Mermaid.js**
+- **Fetch API**
+- **GitHub Pages**
 
 ---
 
 ## ⚙️ Environment Variables
 
-Create a `.env` file in the root directory:
+Create a `.env` file inside the `backend/` directory:
 
-```
-
+```env
 PORT=5001
 MONGO_URI=your_mongodb_connection_string
 DB_NAME=endorsement_network
-
 ````
 
 ---
 
-## ▶️ Running the Server
-
-Install dependencies:
+## ▶️ Running the Backend Locally
 
 ```bash
+cd backend
 npm install
-````
-
-Start the server:
-
-```bash
 npm start
 ```
 
-Server will run at:
+Server runs at:
 
 ```
 http://localhost:5001
@@ -78,19 +96,25 @@ http://localhost:5001
 
 ---
 
-## 🌱 Seeding the Database
-
-To populate the database with sample members and endorsements:
+## 🌱 Database Seeding (Deterministic)
 
 ```bash
+cd backend
 npm run seed
 ```
 
-This will:
+### What the seed script guarantees:
 
-* Clear existing collections
-* Insert sample interns
-* Insert endorsement relationships
+* Members are seeded **exactly in JSON order**
+* Endorsements preserve **stable parent → child ordering**
+* `createdAt` timestamps are **manually offset**, not identical
+* Root is resolved via config (not hardcoded)
+* Indirect links are defined **externally**, not inside code
+
+This ensures:
+
+* MongoDB Atlas does **not reorder** the tree
+* Frontend rendering is **100% consistent**
 
 ---
 
@@ -117,34 +141,50 @@ GET /api/endorsements
     "parentName": "Abhrankan Chakrabarti",
     "childId": "WIN25693",
     "childName": "Aashi",
-    "action": "Endorse"
+    "action": "Endorse",
+    "order": 1
   }
 ]
 ```
 
----
-
-## 🌐 Frontend Integration
-
-This backend is designed to be consumed by a static frontend hosted on **GitHub Pages**.
-
-The frontend dynamically fetches endorsement data and renders a hierarchical tree using **Mermaid.js**.
+Results are sorted by `order` to preserve visual order.
 
 ---
 
-## 📌 Design Philosophy
+## 🌐 Frontend Configuration
 
-* Minimal abstractions
-* Clear data flow
-* Visualization-first API design
-* No unnecessary frameworks or ORMs
-* Easy to extend for audits, penalties, and analytics
+The frontend uses a runtime config file:
+
+```js
+// config.js
+const CONFIG = {
+  API_BASE: location.hostname.includes("github.io")
+    ? "https://abhrankan-winternship-endorsements.onrender.com"
+    : "http://localhost:5001"
+};
+```
+
+This allows:
+
+* GitHub Pages hosting
+* Zero hardcoded backend URLs in HTML
+* Easy environment switching
 
 ---
 
-## 📄 License
+## 🧩 Design Decisions
 
-ISC
+* **Mongoose over native driver** for schema clarity & timestamps
+* **JSON-driven topology** (members, indirect links, config)
+* **No hardcoded root IDs**
+* **Separation of structure vs logic**
+* **Visualization-first API design**
+
+---
+
+## 📜 License
+
+MIT License
 
 ---
 
@@ -152,3 +192,5 @@ ISC
 
 **Abhrankan Chakrabarti**
 WIN Internship Program
+Jedi Endorsement Network
+

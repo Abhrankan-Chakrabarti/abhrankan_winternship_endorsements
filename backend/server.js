@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import Endorsement from "./models/Endorsement.js";
 
 dotenv.config();
 
@@ -25,24 +26,6 @@ mongoose
     console.error("❌ MongoDB connection failed", err);
     process.exit(1);
   });
-
-/* -------------------- Schema -------------------- */
-const endorsementSchema = new mongoose.Schema(
-  {
-    parentId: { type: String, required: true },
-    parentName: { type: String, required: true },
-    childId: { type: String, required: true },
-    childName: { type: String, required: true },
-    action: {
-      type: String,
-      enum: ["Endorse", "De-Endorse"],
-      required: true
-    }
-  },
-  { timestamps: true }
-);
-
-const Endorsement = mongoose.model("Endorsement", endorsementSchema);
 
 /* -------------------- Routes -------------------- */
 

@@ -1,16 +1,31 @@
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import fs from "fs";
+import Member from "./models/Member.js";
+import Endorsement from "./models/Endorsement.js";
 
 dotenv.config();
 
 /* -------------------- Config -------------------- */
-const ROOT_ID = "WIN25625";
+const CONFIG_PATH = "./endorsement_network.config.json";
 
-const INDIRECT = [
-  { parentId: "WIN25309", childId: "WIN25695" },
-  { parentId: "WIN25348", childId: "WIN25702" }
-];
+if (!fs.existsSync(CONFIG_PATH)) {
+  throw new Error("Config file missing: endorsement_network.config.json");
+}
+
+const { rootInternId: ROOT_ID } = JSON.parse(
+  fs.readFileSync(CONFIG_PATH, "utf-8")
+);
+
+if (!ROOT_ID) {
+  throw new Error("rootInternId missing in config file");
+}
+
+const INDIRECT_JSON_PATH = "./endorsement_network.indirect.json";
+
+const indirectLinks = fs.existsSync(INDIRECT_JSON_PATH)
+  ? JSON.parse(fs.readFileSync(INDIRECT_JSON_PATH, "utf-8"))
+  : [];
 
 const MEMBERS_JSON_PATH = "./endorsement_network.members.json";
 
@@ -29,27 +44,6 @@ async function connectDB() {
     process.exit(1);
   }
 }
-
-const memberSchema = new mongoose.Schema({
-  internId: String,
-  name: String,
-});
-
-const endorsementSchema = new mongoose.Schema({
-  parentId: String,
-  parentName: String,
-  childId: String,
-  childName: String,
-  action: {
-    type: String,
-    enum: ["Endorse", "De-Endorse"],
-  },
-  order: Number,
-  createdAt: Date,
-});
-
-const Member = mongoose.model("Member", memberSchema);
-const Endorsement = mongoose.model("Endorsement", endorsementSchema);
 
 /* -------------------- Seed Logic -------------------- */
 const seed = async () => {
@@ -76,7 +70,9 @@ const seed = async () => {
     const nameById = (id) =>
       members.find((m) => m.internId === id)?.name || "Unknown";
 
-    const indirectChildren = new Set(INDIRECT.map((i) => i.childId));
+    const indirectChildren = new Set(
+      indirectLinks.map(link => link.childId)
+    );
 
     let order = 1;
     const endorsements = [];
@@ -101,7 +97,10 @@ const seed = async () => {
     }
 
     // Indirect endorsements
-    for (const link of INDIRECT) {
+    for (const link of indirectLinks) {
+      if (!nameById(link.parentId) || !nameById(link.childId)) {
+        throw new Error(`Invalid indirect link: ${JSON.stringify(link)}`);
+      }
       endorsements.push({
         parentId: link.parentId,
         parentName: nameById(link.parentId),
@@ -109,7 +108,7 @@ const seed = async () => {
         childName: nameById(link.childId),
         action: "Endorse",
         order,
-        createdAt: new Date(2024, 0, 1, 0, 0, order++),
+        createdAt: new Date(2024, 0, 1, 0, 0, order++)
       });
     }
 
