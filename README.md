@@ -158,7 +158,7 @@ The frontend uses a runtime config file:
 ```js
 // config.js
 const CONFIG = {
-  API_BASE: location.hostname.includes("github.io")
+  API_BASE: location.hostname.includes("github.io") || location.hostname.includes("dpdns.org")
     ? "https://abhrankan-winternship-endorsements.onrender.com"
     : "http://localhost:5001"
 };
